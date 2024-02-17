@@ -24,7 +24,7 @@ public class MovieProvider : BaseProvider, IRemoteMetadataProvider<Movie, MovieI
     private const string GFriends = "GFriends";
     private const string Rating = "JP-18+";
 
-    private static readonly string[] AvBaseSupportedProviderNames = { "DUGA", "FANZA", "Getchu", "MGS", "Pcolle" };
+    private static readonly string[] AvBaseSupportedProviderNames = { "DUGA", "FANZA", "Getchu", "MGS" };
 
 #if __EMBY__
     public MovieProvider(ILogManager logManager) : base(logManager.CreateLogger<MovieProvider>())
@@ -192,13 +192,6 @@ public class MovieProvider : BaseProvider, IRemoteMetadataProvider<Movie, MovieI
                 pid.Update != true, cancellationToken));
         }
 
-        var results = new List<RemoteSearchResult>();
-        if (!searchResults.Any())
-        {
-            Logger.Warn("Movie not found: {0}", pid.Id);
-            return results;
-        }
-
         if (Configuration.EnableMovieProviderFilter)
         {
             if (Configuration.GetMovieProviderFilter() is { } filter &&
@@ -214,6 +207,13 @@ public class MovieProvider : BaseProvider, IRemoteMetadataProvider<Movie, MovieI
             {
                 Logger.Warn("Movie provider filter enabled but never used");
             }
+        }
+
+        var results = new List<RemoteSearchResult>();
+        if (!searchResults.Any())
+        {
+            Logger.Warn("Movie not found or has been filtered: {0}", pid.Id);
+            return results;
         }
 
         foreach (var m in searchResults)
